@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useHistoryData } from '@/components/history-context';
@@ -48,7 +48,7 @@ export default function TimelineCompareScreen() {
         <Text style={styles.sectionTitle}>时间轴对比</Text>
 
         <View style={styles.selectorsRow}>
-          <View style={styles.selectorColumn}>
+          <View style={[styles.selectorColumn, openSelector === 'timeline1' && styles.selectorColumnOpen]}>
             <Text style={styles.selectorLabel}>时间轴 1</Text>
             <View style={styles.selectorDropdownWrapper}>
               <TouchableOpacity
@@ -60,13 +60,12 @@ export default function TimelineCompareScreen() {
               </TouchableOpacity>
 
               {openSelector === 'timeline1' ? (
-                <ScrollView
+                <FlatList
                   style={styles.selectorDropdownList}
-                  showsVerticalScrollIndicator={false}
-                  nestedScrollEnabled>
-                  {timelines.map((timeline) => (
+                  data={timelines}
+                  keyExtractor={(timeline) => timeline.id}
+                  renderItem={({ item: timeline }) => (
                     <TouchableOpacity
-                      key={timeline.id}
                       style={[
                         styles.selectorItem,
                         selectedTimeline1Id === timeline.id && styles.selectorItemSelected,
@@ -84,13 +83,16 @@ export default function TimelineCompareScreen() {
                         {timeline.name}
                       </Text>
                     </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                  )}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled
+                  scrollEnabled
+                />
               ) : null}
             </View>
           </View>
 
-          <View style={styles.selectorColumn}>
+          <View style={[styles.selectorColumn, openSelector === 'timeline2' && styles.selectorColumnOpen]}>
             <Text style={styles.selectorLabel}>时间轴 2</Text>
             <View style={styles.selectorDropdownWrapper}>
               <TouchableOpacity
@@ -102,13 +104,12 @@ export default function TimelineCompareScreen() {
               </TouchableOpacity>
 
               {openSelector === 'timeline2' ? (
-                <ScrollView
+                <FlatList
                   style={styles.selectorDropdownList}
-                  showsVerticalScrollIndicator={false}
-                  nestedScrollEnabled>
-                  {timelines.map((timeline) => (
+                  data={timelines}
+                  keyExtractor={(timeline) => timeline.id}
+                  renderItem={({ item: timeline }) => (
                     <TouchableOpacity
-                      key={timeline.id}
                       style={[
                         styles.selectorItem,
                         selectedTimeline2Id === timeline.id && styles.selectorItemSelected,
@@ -126,12 +127,19 @@ export default function TimelineCompareScreen() {
                         {timeline.name}
                       </Text>
                     </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                  )}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled
+                  scrollEnabled
+                />
               ) : null}
             </View>
           </View>
         </View>
+
+        {openSelector ? (
+          <Pressable style={styles.screenOverlay} onPress={() => setOpenSelector(null)} />
+        ) : null}
 
         {timeline1 && timeline2 ? (
           <ScrollView style={styles.comparisonContent} showsVerticalScrollIndicator={false}>
@@ -339,6 +347,10 @@ const styles = StyleSheet.create({
     flex: 1,
     zIndex: 5,
   },
+  selectorColumnOpen: {
+    zIndex: 50,
+    elevation: 20,
+  },
   selectorLabel: {
     color: '#C8A76B',
     fontSize: 12,
@@ -371,16 +383,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   selectorDropdownList: {
-    position: 'absolute',
-    top: 46,
-    left: 0,
-    right: 0,
+    marginTop: 6,
     maxHeight: 180,
     backgroundColor: '#252525',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#3A3A3A',
-    zIndex: 10,
   },
   selectorItem: {
     paddingVertical: 10,
@@ -565,5 +573,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     marginVertical: 12,
+  },
+  screenOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 20,
   },
 });

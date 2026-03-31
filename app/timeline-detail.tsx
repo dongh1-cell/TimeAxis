@@ -2,6 +2,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   FlatList,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -58,7 +59,6 @@ export default function TimelineDetailScreen() {
 
   const handleToggleEditor = () => {
     if (isEditorOpen) {
-      handleCancelEditTimelineItem();
       setIsEditorOpen(false);
       return;
     }
@@ -245,6 +245,16 @@ export default function TimelineDetailScreen() {
           onPress={() => router.push(`/quiz?timelineId=${timeline?.id}`)}>
           <Text style={styles.jumpButtonText}>进入互动知识测验</Text>
         </TouchableOpacity>
+
+        {openItemMenuId || isEditorOpen ? (
+          <Pressable
+            style={styles.screenOverlay}
+            onPress={() => {
+              setOpenItemMenuId(null);
+              setIsEditorOpen(false);
+            }}
+          />
+        ) : null}
       </View>
     </SafeAreaView>
   );
@@ -307,6 +317,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#3A3A3A',
+    position: 'relative',
+    zIndex: 3500,
+    elevation: 35,
   },
   editorTitle: {
     color: '#F2E0BD',
@@ -518,5 +531,9 @@ const styles = StyleSheet.create({
     color: '#F2E0BD',
     fontSize: 14,
     fontWeight: '700',
+  },
+  screenOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 3000,
   },
 });

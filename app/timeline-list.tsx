@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   FlatList,
+  Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -142,6 +143,16 @@ export default function TimelineListScreen() {
           contentContainerStyle={styles.listContent}
         />
 
+        {openMenuId || showCreateForm ? (
+          <Pressable
+            style={styles.screenOverlay}
+            onPress={() => {
+              setOpenMenuId(null);
+              setShowCreateForm(false);
+            }}
+          />
+        ) : null}
+
         <TouchableOpacity
           style={styles.bottomButton}
           activeOpacity={0.85}
@@ -195,6 +206,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#3A3A3A',
+    position: 'relative',
+    zIndex: 3500,
+    elevation: 35,
   },
   input: {
     backgroundColor: '#1F1F1F',
@@ -328,5 +342,9 @@ const styles = StyleSheet.create({
     color: '#F2E0BD',
     fontSize: 14,
     fontWeight: '700',
+  },
+  screenOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 2000,
   },
 });
