@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useHistoryData } from '@/components/history-context';
 
@@ -37,7 +38,7 @@ export default function TimelineCompareScreen() {
   }, [timeline1, timeline2]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton} activeOpacity={0.85} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>← 返回</Text>
