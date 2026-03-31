@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 export type TimelineItem = {
   id: string;
@@ -183,6 +184,19 @@ const sortTimelineByYear = (items: TimelineItem[]) => {
   return [...items].sort((a, b) => Number(a.year) - Number(b.year));
 };
 
+const HISTORY_STORAGE_KEY = 'history_data_v1';
+
+type PersistedHistoryData = {
+  timelines: Timeline[];
+  currentTimelineId: string | null;
+};
+
+const normalizeTimelines = (timelines: Timeline[]) =>
+  timelines.map((timeline) => ({
+    ...timeline,
+    items: sortTimelineByYear(timeline.items ?? []),
+  }));
+
 const HistoryContext = createContext<HistoryContextValue | undefined>(undefined);
 
 export function HistoryProvider({ children }: { children: React.ReactNode }) {
@@ -193,6 +207,60 @@ export function HistoryProvider({ children }: { children: React.ReactNode }) {
 
   const [timelines, setTimelines] = useState<Timeline[]>(initialTimelines);
   const [currentTimelineId, setCurrentTimelineId] = useState<string | null>('timeline-china-modern');
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const hydrate = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(HISTORY_STORAGE_KEY);
+
+        if (!raw || !isMounted) {
+          return;
+        }
+
+        const parsed = JSON.parse(raw) as PersistedHistoryData;
+        const restoredTimelines = Array.isArray(parsed?.timelines)
+          ? normalizeTimelines(parsed.timelines)
+          : [];
+        const restoredCurrentTimelineId = parsed?.currentTimelineId ?? null;
+
+        if (restoredTimelines.length > 0) {
+          const hasCurrent = restoredTimelines.some((t) => t.id === restoredCurrentTimelineId);
+          setTimelines(restoredTimelines);
+          setCurrentTimelineId(hasCurrent ? restoredCurrentTimelineId : restoredTimelines[0].id);
+        }
+      } catch {
+        // 持久化数据损坏时回退到内置种子数据
+      } finally {
+        if (isMounted) {
+          setIsHydrated(true);
+        }
+      }
+    };
+
+    hydrate();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    const payload: PersistedHistoryData = {
+      timelines,
+      currentTimelineId,
+    };
+
+    AsyncStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(payload)).catch(() => {
+      // 存储失败不影响页面现有功能
+    });
+  }, [timelines, currentTimelineId, isHydrated]);
 
   const currentTimeline = useMemo(
     () => timelines.find((t) => t.id === currentTimelineId) || null,
