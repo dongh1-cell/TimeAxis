@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,6 +10,7 @@ export default function TimelineCompareScreen() {
   const [selectedTimeline1Id, setSelectedTimeline1Id] = useState<string | null>(null);
   const [selectedTimeline2Id, setSelectedTimeline2Id] = useState<string | null>(null);
   const [openSelector, setOpenSelector] = useState<'timeline1' | 'timeline2' | null>(null);
+  const [isCompareReady, setIsCompareReady] = useState(false);
 
   const timeline1 = timelines.find((t) => t.id === selectedTimeline1Id);
   const timeline2 = timelines.find((t) => t.id === selectedTimeline2Id);
@@ -37,6 +38,20 @@ export default function TimelineCompareScreen() {
       rightEvents: timeline2.items.filter((item) => item.year === year),
     }));
   }, [timeline1, timeline2]);
+
+  useEffect(() => {
+    if (!timeline1 || !timeline2) {
+      setIsCompareReady(false);
+      return;
+    }
+
+    setIsCompareReady(false);
+    const timer = setTimeout(() => {
+      setIsCompareReady(true);
+    }, 16);
+
+    return () => clearTimeout(timer);
+  }, [timeline1?.id, timeline2?.id]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
@@ -142,6 +157,11 @@ export default function TimelineCompareScreen() {
         ) : null}
 
         {timeline1 && timeline2 ? (
+          !isCompareReady ? (
+            <View style={styles.placeholderContainer}>
+              <Text style={styles.placeholderText}>正在加载对比内容...</Text>
+            </View>
+          ) : (
           <ScrollView style={styles.comparisonContent} showsVerticalScrollIndicator={false}>
             <View style={styles.comparisonCard}>
               <Text style={styles.comparisonTitle}>并行时间轴对照</Text>
@@ -300,6 +320,7 @@ export default function TimelineCompareScreen() {
               )}
             </View>
           </ScrollView>
+          )
         ) : (
           <View style={styles.placeholderContainer}>
             <Text style={styles.placeholderText}>请选择两条不同的时间轴进行对比</Text>

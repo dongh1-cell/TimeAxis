@@ -2,6 +2,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   FlatList,
+  InteractionManager,
   Pressable,
   StyleSheet,
   Text,
@@ -27,6 +28,18 @@ export default function TimelineDetailScreen() {
 
   const timeline = currentTimeline;
   const timelineItems = timeline?.items || [];
+  const [isListReady, setIsListReady] = useState(false);
+
+  React.useEffect(() => {
+    setIsListReady(false);
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsListReady(true);
+    });
+
+    return () => {
+      task.cancel();
+    };
+  }, [timeline?.id, timelineItems.length]);
 
   // 编辑态控制：null 表示新增模式。
   const [editingTimelineId, setEditingTimelineId] = useState<string | null>(null);
@@ -224,7 +237,11 @@ export default function TimelineDetailScreen() {
           </View>
         ) : null}
 
-        {timelineItems.length > 0 ? (
+        {!isListReady ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>正在加载时间轴内容...</Text>
+          </View>
+        ) : timelineItems.length > 0 ? (
           <FlatList
             style={styles.timelineList}
             data={timelineItems}
