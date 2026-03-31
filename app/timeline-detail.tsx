@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -76,6 +77,8 @@ export default function TimelineDetailScreen() {
       return;
     }
 
+    // 通过“展开新增历史事件”打开时，强制回到新增态并清空上次编辑内容。
+    handleCancelEditTimelineItem();
     setIsEditorOpen(true);
   };
 
@@ -165,14 +168,15 @@ export default function TimelineDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity style={styles.backButton} activeOpacity={0.85} onPress={handleGoBack}>
-            <Text style={styles.backButtonText}>← 返回</Text>
-          </TouchableOpacity>
-          <Text style={styles.sectionTitle}>{timeline?.name || '时间轴详情'}</Text>
-          <View style={{ width: 60 }} />
-        </View>
+      <TouchableWithoutFeedback onPress={() => setOpenItemMenuId(null)}>
+        <View style={styles.container}>
+          <View style={styles.headerRow}>
+            <TouchableOpacity style={styles.backButton} activeOpacity={0.85} onPress={handleGoBack}>
+              <Text style={styles.backButtonText}>← 返回</Text>
+            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>{timeline?.name || '时间轴详情'}</Text>
+            <View style={{ width: 60 }} />
+          </View>
 
         <TouchableOpacity
           style={styles.editorToggleButton}
@@ -256,23 +260,23 @@ export default function TimelineDetailScreen() {
           </View>
         )}
 
-        <TouchableOpacity
-          style={styles.jumpButton}
-          activeOpacity={0.85}
-          onPress={() => router.push(`/quiz?timelineId=${timeline?.id}`)}>
-          <Text style={styles.jumpButtonText}>进入互动知识测验</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.jumpButton}
+            activeOpacity={0.85}
+            onPress={() => router.push(`/quiz?timelineId=${timeline?.id}`)}>
+            <Text style={styles.jumpButtonText}>进入互动知识测验</Text>
+          </TouchableOpacity>
 
-        {openItemMenuId || isEditorOpen ? (
-          <Pressable
-            style={styles.screenOverlay}
-            onPress={() => {
-              setOpenItemMenuId(null);
-              setIsEditorOpen(false);
-            }}
-          />
-        ) : null}
-      </View>
+          {isEditorOpen ? (
+            <Pressable
+              style={styles.screenOverlay}
+              onPress={() => {
+                setIsEditorOpen(false);
+              }}
+            />
+          ) : null}
+        </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
@@ -488,7 +492,7 @@ const styles = StyleSheet.create({
   },
   itemMenuContainer: {
     position: 'relative',
-    zIndex: 1000,
+    zIndex: 4000,
   },
   itemMenuButton: {
     width: 28,
@@ -551,6 +555,6 @@ const styles = StyleSheet.create({
   },
   screenOverlay: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 3000,
+    zIndex: 2000,
   },
 });

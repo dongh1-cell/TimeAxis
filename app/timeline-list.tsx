@@ -8,6 +8,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 
@@ -94,72 +95,73 @@ export default function TimelineListScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.sectionTitle}>时间轴管理</Text>
+      <TouchableWithoutFeedback onPress={() => setOpenMenuId(null)}>
+        <View style={styles.container}>
+          <Text style={styles.sectionTitle}>时间轴管理</Text>
 
-        <TouchableOpacity
-          style={styles.createButton}
-          activeOpacity={0.85}
-          onPress={() => setShowCreateForm(!showCreateForm)}>
-          <Text style={styles.createButtonText}>
-            {showCreateForm ? '取消' : '新建时间轴'}
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.createButton}
+            activeOpacity={0.85}
+            onPress={() => setShowCreateForm(!showCreateForm)}>
+            <Text style={styles.createButtonText}>
+              {showCreateForm ? '取消' : '新建时间轴'}
+            </Text>
+          </TouchableOpacity>
 
-        {showCreateForm ? (
-          <View style={styles.createForm}>
-            <TextInput
-              value={newTimelineName}
-              onChangeText={setNewTimelineName}
-              placeholder="时间轴名称，例如 中国历史"
-              placeholderTextColor="#8F8F8F"
-              style={styles.input}
-            />
+          {showCreateForm ? (
+            <View style={styles.createForm}>
+              <TextInput
+                value={newTimelineName}
+                onChangeText={setNewTimelineName}
+                placeholder="时间轴名称，例如 中国历史"
+                placeholderTextColor="#8F8F8F"
+                style={styles.input}
+              />
 
-            <View style={styles.formButtonRow}>
-              <TouchableOpacity
-                style={styles.formPrimaryButton}
-                activeOpacity={0.85}
-                onPress={handleCreateTimeline}>
-                <Text style={styles.formButtonText}>创建</Text>
-              </TouchableOpacity>
+              <View style={styles.formButtonRow}>
+                <TouchableOpacity
+                  style={styles.formPrimaryButton}
+                  activeOpacity={0.85}
+                  onPress={handleCreateTimeline}>
+                  <Text style={styles.formButtonText}>创建</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.formCancelButton}
-                activeOpacity={0.85}
-                onPress={() => setShowCreateForm(false)}>
-                <Text style={styles.formButtonText}>取消</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.formCancelButton}
+                  activeOpacity={0.85}
+                  onPress={() => setShowCreateForm(false)}>
+                  <Text style={styles.formButtonText}>取消</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        ) : null}
+          ) : null}
 
-        <FlatList
-          style={styles.listContainer}
-          data={data}
-          keyExtractor={(item) => item.id}
-          renderItem={renderTimelineItem}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
-        />
-
-        {openMenuId || showCreateForm ? (
-          <Pressable
-            style={styles.screenOverlay}
-            onPress={() => {
-              setOpenMenuId(null);
-              setShowCreateForm(false);
-            }}
+          <FlatList
+            style={styles.listContainer}
+            data={data}
+            keyExtractor={(item) => item.id}
+            renderItem={renderTimelineItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
           />
-        ) : null}
 
-        <TouchableOpacity
-          style={styles.bottomButton}
-          activeOpacity={0.85}
-          onPress={() => router.push('/timeline-compare')}>
-          <Text style={styles.bottomButtonText}>对比两条时间轴</Text>
-        </TouchableOpacity>
-      </View>
+          {showCreateForm ? (
+            <Pressable
+              style={styles.screenOverlay}
+              onPress={() => {
+                setShowCreateForm(false);
+              }}
+            />
+          ) : null}
+
+          <TouchableOpacity
+            style={styles.bottomButton}
+            activeOpacity={0.85}
+            onPress={() => router.push('/timeline-compare')}>
+            <Text style={styles.bottomButtonText}>对比两条时间轴</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   );
 }
@@ -345,6 +347,6 @@ const styles = StyleSheet.create({
   },
   screenOverlay: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 2000,
+    zIndex: 1200,
   },
 });
