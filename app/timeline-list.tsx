@@ -42,7 +42,11 @@ export default function TimelineListScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.timelineItemCard, isSelected && styles.timelineItemSelected]}
+        style={[
+          styles.timelineItemCard,
+          isSelected && styles.timelineItemSelected,
+          isMenuOpen && styles.timelineItemCardMenuOpen,
+        ]}
         activeOpacity={0.85}
         onPress={() => {
           selectTimeline(item.id);
@@ -247,6 +251,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: '#3A3A3A',
+    position: 'relative',
+  },
+  timelineItemCardMenuOpen: {
+    zIndex: 3000,
+    elevation: 30,
   },
   timelineItemSelected: {
     borderColor: '#C8A76B',
@@ -292,6 +301,7 @@ const styles = StyleSheet.create({
     borderColor: '#3A3A3A',
     overflow: 'hidden',
     zIndex: 1001,
+    elevation: 40,
   },
   dropdownItem: {
     paddingVertical: 10,

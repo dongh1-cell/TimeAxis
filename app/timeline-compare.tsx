@@ -9,6 +9,7 @@ export default function TimelineCompareScreen() {
   const { timelines } = useHistoryData();
   const [selectedTimeline1Id, setSelectedTimeline1Id] = useState<string | null>(null);
   const [selectedTimeline2Id, setSelectedTimeline2Id] = useState<string | null>(null);
+  const [openSelector, setOpenSelector] = useState<'timeline1' | 'timeline2' | null>(null);
 
   const timeline1 = timelines.find((t) => t.id === selectedTimeline1Id);
   const timeline2 = timelines.find((t) => t.id === selectedTimeline2Id);
@@ -49,56 +50,86 @@ export default function TimelineCompareScreen() {
         <View style={styles.selectorsRow}>
           <View style={styles.selectorColumn}>
             <Text style={styles.selectorLabel}>时间轴 1</Text>
-            <ScrollView
-              style={styles.selectorList}
-              showsVerticalScrollIndicator={false}
-              nestedScrollEnabled>
-              {timelines.map((timeline) => (
-                <TouchableOpacity
-                  key={timeline.id}
-                  style={[
-                    styles.selectorItem,
-                    selectedTimeline1Id === timeline.id && styles.selectorItemSelected,
-                  ]}
-                  activeOpacity={0.85}
-                  onPress={() => setSelectedTimeline1Id(timeline.id)}>
-                  <Text
-                    style={[
-                      styles.selectorItemText,
-                      selectedTimeline1Id === timeline.id && styles.selectorItemTextSelected,
-                    ]}>
-                    {timeline.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            <View style={styles.selectorDropdownWrapper}>
+              <TouchableOpacity
+                style={styles.selectorTrigger}
+                activeOpacity={0.85}
+                onPress={() => setOpenSelector(openSelector === 'timeline1' ? null : 'timeline1')}>
+                <Text style={styles.selectorTriggerText}>{timeline1?.name || '请选择时间轴'}</Text>
+                <Text style={styles.selectorArrowText}>{openSelector === 'timeline1' ? '▲' : '▼'}</Text>
+              </TouchableOpacity>
+
+              {openSelector === 'timeline1' ? (
+                <ScrollView
+                  style={styles.selectorDropdownList}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled>
+                  {timelines.map((timeline) => (
+                    <TouchableOpacity
+                      key={timeline.id}
+                      style={[
+                        styles.selectorItem,
+                        selectedTimeline1Id === timeline.id && styles.selectorItemSelected,
+                      ]}
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        setSelectedTimeline1Id(timeline.id);
+                        setOpenSelector(null);
+                      }}>
+                      <Text
+                        style={[
+                          styles.selectorItemText,
+                          selectedTimeline1Id === timeline.id && styles.selectorItemTextSelected,
+                        ]}>
+                        {timeline.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : null}
+            </View>
           </View>
 
           <View style={styles.selectorColumn}>
             <Text style={styles.selectorLabel}>时间轴 2</Text>
-            <ScrollView
-              style={styles.selectorList}
-              showsVerticalScrollIndicator={false}
-              nestedScrollEnabled>
-              {timelines.map((timeline) => (
-                <TouchableOpacity
-                  key={timeline.id}
-                  style={[
-                    styles.selectorItem,
-                    selectedTimeline2Id === timeline.id && styles.selectorItemSelected,
-                  ]}
-                  activeOpacity={0.85}
-                  onPress={() => setSelectedTimeline2Id(timeline.id)}>
-                  <Text
-                    style={[
-                      styles.selectorItemText,
-                      selectedTimeline2Id === timeline.id && styles.selectorItemTextSelected,
-                    ]}>
-                    {timeline.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+            <View style={styles.selectorDropdownWrapper}>
+              <TouchableOpacity
+                style={styles.selectorTrigger}
+                activeOpacity={0.85}
+                onPress={() => setOpenSelector(openSelector === 'timeline2' ? null : 'timeline2')}>
+                <Text style={styles.selectorTriggerText}>{timeline2?.name || '请选择时间轴'}</Text>
+                <Text style={styles.selectorArrowText}>{openSelector === 'timeline2' ? '▲' : '▼'}</Text>
+              </TouchableOpacity>
+
+              {openSelector === 'timeline2' ? (
+                <ScrollView
+                  style={styles.selectorDropdownList}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled>
+                  {timelines.map((timeline) => (
+                    <TouchableOpacity
+                      key={timeline.id}
+                      style={[
+                        styles.selectorItem,
+                        selectedTimeline2Id === timeline.id && styles.selectorItemSelected,
+                      ]}
+                      activeOpacity={0.85}
+                      onPress={() => {
+                        setSelectedTimeline2Id(timeline.id);
+                        setOpenSelector(null);
+                      }}>
+                      <Text
+                        style={[
+                          styles.selectorItemText,
+                          selectedTimeline2Id === timeline.id && styles.selectorItemTextSelected,
+                        ]}>
+                        {timeline.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : null}
+            </View>
           </View>
         </View>
 
@@ -303,10 +334,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
     marginBottom: 12,
-    height: 200,
   },
   selectorColumn: {
     flex: 1,
+    zIndex: 5,
   },
   selectorLabel: {
     color: '#C8A76B',
@@ -314,12 +345,42 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 4,
   },
-  selectorList: {
-    flex: 1,
+  selectorDropdownWrapper: {
+    position: 'relative',
+  },
+  selectorTrigger: {
     backgroundColor: '#252525',
     borderRadius: 10,
     borderWidth: 1,
     borderColor: '#3A3A3A',
+    minHeight: 42,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectorTriggerText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    flex: 1,
+    paddingRight: 8,
+  },
+  selectorArrowText: {
+    color: '#A8A8A8',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  selectorDropdownList: {
+    position: 'absolute',
+    top: 46,
+    left: 0,
+    right: 0,
+    maxHeight: 180,
+    backgroundColor: '#252525',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
+    zIndex: 10,
   },
   selectorItem: {
     paddingVertical: 10,

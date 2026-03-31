@@ -86,7 +86,6 @@ export default function TimelineDetailScreen() {
   };
 
   const handleGoBack = () => {
-    setOpenItemMenuId(null);
     router.back();
   };
 
@@ -94,7 +93,7 @@ export default function TimelineDetailScreen() {
     const isMenuOpen = openItemMenuId === item.id;
 
     return (
-      <View style={styles.timelineRow}>
+      <View style={[styles.timelineRow, isMenuOpen && styles.timelineRowMenuOpen]}>
         <View style={styles.yearColumn}>
           <Text style={styles.yearText}>{item.year}</Text>
         </View>
@@ -382,6 +381,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     minHeight: 96,
     marginBottom: 10,
+    position: 'relative',
+  },
+  timelineRowMenuOpen: {
+    zIndex: 3000,
+    elevation: 30,
   },
   yearColumn: {
     width: 64,
@@ -454,7 +458,7 @@ const styles = StyleSheet.create({
   },
   itemMenuContainer: {
     position: 'relative',
-    zIndex: 100,
+    zIndex: 1000,
   },
   itemMenuButton: {
     width: 28,
@@ -479,7 +483,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#3A3A3A',
     overflow: 'hidden',
-    zIndex: 101,
+    zIndex: 1001,
+    elevation: 40,
   },
   itemDropdownItem: {
     paddingVertical: 10,
