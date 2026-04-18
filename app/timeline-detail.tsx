@@ -264,7 +264,6 @@ export default function TimelineDetailScreen() {
             <Text style={styles.backButtonText}>← 返回</Text>
           </TouchableOpacity>
           <Text style={styles.sectionTitle}>{timeline?.name || '时间轴详情'}</Text>
-          <View style={{ width: 60 }} />
         </View>
 
         {renderEditorPanel()}
@@ -309,7 +308,6 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     marginBottom: 10,
     paddingHorizontal: 14,
     paddingTop: 12,
@@ -329,7 +327,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
     flex: 1,
-    textAlign: 'center',
+    textAlign: 'left',
+    marginLeft: 12,
   },
   editorToggleButton: {
     borderWidth: 1,
@@ -423,7 +422,8 @@ const styles = StyleSheet.create({
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    paddingTop: 24,
   },
   emptyText: {
     color: '#808080',
