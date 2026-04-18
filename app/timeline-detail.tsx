@@ -8,7 +8,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,15 +16,18 @@ import { TimelineItem, useHistoryData } from '@/components/history-context';
 
 export default function TimelineDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { timelines, currentTimeline, selectTimeline, saveTimelineItem, deleteTimelineItem } =
+  const { currentTimeline, selectTimeline, saveTimelineItem, deleteTimelineItem } =
     useHistoryData();
 
-  // 如果传了 id，确保选中该时间轴
-  React.useEffect(() => {
-    if (id && id !== currentTimeline?.id) {
-      selectTimeline(id);
-    }
-  }, [id]);
+  React.useEffect(
+    () => {
+      if (id && id !== currentTimeline?.id) {
+        selectTimeline(id);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [id]
+  );
 
   const timeline = currentTimeline;
   const timelineItems = timeline?.items || [];
@@ -105,11 +107,99 @@ export default function TimelineDetailScreen() {
     router.back();
   };
 
+  const renderEditorPanel = () => (
+    <>
+      <TouchableOpacity
+        style={styles.editorToggleButton}
+        activeOpacity={0.85}
+        onPress={handleToggleEditor}>
+        <Text style={styles.editorToggleButtonText}>
+          {isEditorOpen
+            ? editingTimelineId
+              ? '收起编辑面板'
+              : '收起新增面板'
+            : '展开新增历史事件'}
+        </Text>
+      </TouchableOpacity>
+
+      {isEditorOpen ? (
+        <View
+          style={styles.editorCard}
+          onStartShouldSetResponder={() => true}
+          onMoveShouldSetResponder={() => true}>
+          <Text style={styles.editorTitle}>{editingTimelineId ? '编辑历史事件' : '新增历史事件'}</Text>
+
+          <TextInput
+            value={formYear}
+            onChangeText={handleYearChange}
+            placeholder="年份，例如 1914"
+            placeholderTextColor="#8F8F8F"
+            style={styles.input}
+            keyboardType="number-pad"
+            editable={true}
+          />
+          <TextInput
+            value={formTitle}
+            onChangeText={setFormTitle}
+            placeholder="事件标题"
+            placeholderTextColor="#8F8F8F"
+            style={styles.input}
+            editable={true}
+          />
+          <TextInput
+            value={formDesc}
+            onChangeText={setFormDesc}
+            placeholder="事件描述"
+            placeholderTextColor="#8F8F8F"
+            style={[styles.input, styles.inputDesc]}
+            multiline
+            editable={true}
+          />
+
+          <View style={styles.editorButtonRow}>
+            <TouchableOpacity
+              style={styles.editorPrimaryButton}
+              activeOpacity={0.85}
+              onPress={handleSaveTimelineItem}>
+              <Text style={styles.editorPrimaryButtonText}>
+                {editingTimelineId ? '保存修改' : '添加到时间轴'}
+              </Text>
+            </TouchableOpacity>
+
+            {editingTimelineId ? (
+              <TouchableOpacity
+                style={styles.editorGhostButton}
+                activeOpacity={0.85}
+                onPress={handleCancelEditAndClose}>
+                <Text style={styles.editorGhostButtonText}>取消编辑</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
+      ) : null}
+    </>
+  );
+
+  const renderListFooter = () => (
+    <TouchableOpacity
+      style={styles.jumpButton}
+      activeOpacity={0.85}
+      onPress={() => router.push(`/quiz?timelineId=${timeline?.id}`)}>
+      <Text style={styles.jumpButtonText}>进入互动知识测验</Text>
+    </TouchableOpacity>
+  );
+
   const renderTimelineItem = ({ item }: { item: TimelineItem }) => {
     const isMenuOpen = openItemMenuId === item.id;
 
     return (
-      <View style={[styles.timelineRow, isMenuOpen && styles.timelineRowMenuOpen]}>
+      <Pressable
+        onPress={() => {
+          if (isMenuOpen) {
+            setOpenItemMenuId(null);
+          }
+        }}
+        style={[styles.timelineRow, isMenuOpen && styles.timelineRowMenuOpen]}>
         <View style={styles.yearColumn}>
           <Text style={styles.yearText}>{item.year}</Text>
         </View>
@@ -162,84 +252,22 @@ export default function TimelineDetailScreen() {
             </View>
           </View>
         </View>
-      </View>
+      </Pressable>
     );
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <TouchableWithoutFeedback onPress={() => setOpenItemMenuId(null)}>
-        <View style={styles.container}>
-          <View style={styles.headerRow}>
-            <TouchableOpacity style={styles.backButton} activeOpacity={0.85} onPress={handleGoBack}>
-              <Text style={styles.backButtonText}>← 返回</Text>
-            </TouchableOpacity>
-            <Text style={styles.sectionTitle}>{timeline?.name || '时间轴详情'}</Text>
-            <View style={{ width: 60 }} />
-          </View>
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity style={styles.backButton} activeOpacity={0.85} onPress={handleGoBack}>
+            <Text style={styles.backButtonText}>← 返回</Text>
+          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>{timeline?.name || '时间轴详情'}</Text>
+          <View style={{ width: 60 }} />
+        </View>
 
-        <TouchableOpacity
-          style={styles.editorToggleButton}
-          activeOpacity={0.85}
-          onPress={handleToggleEditor}>
-          <Text style={styles.editorToggleButtonText}>
-            {isEditorOpen
-              ? editingTimelineId
-                ? '收起编辑面板'
-                : '收起新增面板'
-              : '展开新增历史事件'}
-          </Text>
-        </TouchableOpacity>
-
-        {isEditorOpen ? (
-          <View style={styles.editorCard}>
-            <Text style={styles.editorTitle}>{editingTimelineId ? '编辑历史事件' : '新增历史事件'}</Text>
-
-            <TextInput
-              value={formYear}
-              onChangeText={handleYearChange}
-              placeholder="年份，例如 1914"
-              placeholderTextColor="#8F8F8F"
-              style={styles.input}
-              keyboardType="number-pad"
-            />
-            <TextInput
-              value={formTitle}
-              onChangeText={setFormTitle}
-              placeholder="事件标题"
-              placeholderTextColor="#8F8F8F"
-              style={styles.input}
-            />
-            <TextInput
-              value={formDesc}
-              onChangeText={setFormDesc}
-              placeholder="事件描述"
-              placeholderTextColor="#8F8F8F"
-              style={[styles.input, styles.inputDesc]}
-              multiline
-            />
-
-            <View style={styles.editorButtonRow}>
-              <TouchableOpacity
-                style={styles.editorPrimaryButton}
-                activeOpacity={0.85}
-                onPress={handleSaveTimelineItem}>
-                <Text style={styles.editorPrimaryButtonText}>
-                  {editingTimelineId ? '保存修改' : '添加到时间轴'}
-                </Text>
-              </TouchableOpacity>
-
-              {editingTimelineId ? (
-                <TouchableOpacity
-                  style={styles.editorGhostButton}
-                  activeOpacity={0.85}
-                  onPress={handleCancelEditAndClose}>
-                  <Text style={styles.editorGhostButtonText}>取消编辑</Text>
-                </TouchableOpacity>
-              ) : null}
-            </View>
-          </View>
-        ) : null}
+        {renderEditorPanel()}
 
         {!isListReady ? (
           <View style={styles.emptyContainer}>
@@ -253,30 +281,17 @@ export default function TimelineDetailScreen() {
             renderItem={renderTimelineItem}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.timelineListContent}
+            ListFooterComponent={renderListFooter}
+            scrollEnabled={true}
+            nestedScrollEnabled={true}
+            keyboardShouldPersistTaps="always"
           />
         ) : (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>还没有添加任何事件</Text>
           </View>
         )}
-
-          <TouchableOpacity
-            style={styles.jumpButton}
-            activeOpacity={0.85}
-            onPress={() => router.push(`/quiz?timelineId=${timeline?.id}`)}>
-            <Text style={styles.jumpButtonText}>进入互动知识测验</Text>
-          </TouchableOpacity>
-
-          {isEditorOpen ? (
-            <Pressable
-              style={styles.screenOverlay}
-              onPress={() => {
-                setIsEditorOpen(false);
-              }}
-            />
-          ) : null}
-        </View>
-      </TouchableWithoutFeedback>
+      </View>
     </SafeAreaView>
   );
 }
@@ -289,15 +304,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1E1E1E',
-    paddingHorizontal: 14,
-    paddingBottom: 10,
-    paddingTop: 12,
+    flexDirection: 'column',
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 10,
+    paddingHorizontal: 14,
+    paddingTop: 12,
   },
   backButton: {
     paddingHorizontal: 4,
@@ -325,6 +340,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#242424',
     marginBottom: 10,
+    marginHorizontal: 14,
   },
   editorToggleButtonText: {
     color: '#F2E0BD',
@@ -336,11 +352,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
+    marginHorizontal: 14,
     borderWidth: 1,
     borderColor: '#3A3A3A',
     position: 'relative',
-    zIndex: 3500,
-    elevation: 35,
+    zIndex: 100,
+    elevation: 10,
   },
   editorTitle: {
     color: '#F2E0BD',
@@ -398,6 +415,7 @@ const styles = StyleSheet.create({
   },
   timelineListContent: {
     paddingBottom: 8,
+    paddingHorizontal: 14,
   },
   timelineList: {
     flex: 1,
@@ -540,6 +558,7 @@ const styles = StyleSheet.create({
   },
   jumpButton: {
     marginTop: 10,
+    marginHorizontal: 14,
     borderWidth: 1,
     borderColor: '#C8A76B',
     borderRadius: 10,
@@ -552,9 +571,5 @@ const styles = StyleSheet.create({
     color: '#F2E0BD',
     fontSize: 14,
     fontWeight: '700',
-  },
-  screenOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 2000,
   },
 });
